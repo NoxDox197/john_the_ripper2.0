@@ -5,6 +5,15 @@ import shlex
 
 
 # chiedo di inserire il file
+def wordlist():
+    while True:
+        file = input(
+            "Inserire il nome del file di wordlist da usare: (é preferibile rinominare il file con un nome semplice senza spazi o caratteri speciali) "
+        )
+        if os.path.exists(file):
+            return file
+        else:
+            print("il file non esiste")
 def richiesta():
 
     while True:
@@ -15,8 +24,7 @@ def richiesta():
             return file
         else:
             print("il file non esiste")
-
-
+       
 def controllo(proc):
     if proc.returncode == 0:
         print("Processo eseguito")
@@ -24,7 +32,8 @@ def controllo(proc):
         print("Errore")
         print(proc.stderr)
 
-
+wordlist = wordlist()
+wordlist_safe = shlex.quote(wordlist)
 file = richiesta()
 file_safe = shlex.quote(file)
 hashfile = file + ".hash"
@@ -148,7 +157,7 @@ def esecuzione():
         "wsl",
         "bash",
         "-c",
-        f"cd ~/john-jumbo/run && ./john --wordlist=... --rules {hash_safe}",
+        f"cd ~/john-jumbo/run && ./john --wordlist={wordlist_safe} --rules {hash_safe}",
     ]
 
     # cmd_cp: copio il file da craccare nella cartella di john
@@ -172,7 +181,7 @@ def esecuzione():
 
     # COMANDO3: eseguo john sul file hash
     try:
-        process = subprocess.run(cmd_john, capture_output=True, text=True, timeout=300)
+        process = subprocess.run(cmd_john, capture_output=True, text=True, timeout=900)
         controllo(process)
         if process.returncode != 0:
             return
@@ -223,7 +232,6 @@ show = subprocess.run(
 )
 
 print(show.stdout)
-
 
 
 pulizia()
