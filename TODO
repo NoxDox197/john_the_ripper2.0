@@ -1,0 +1,19 @@
+# TODO
+
+## Miglioramenti
+
+* [ ] Migliorare gestione errori
+* [ ] Rendere i percorsi configurabili
+* [ ] Rimuovere dipendenza da percorsi fissi
+* [ ] Migliorare sicurezza input
+
+## Funzionalità
+
+* [ ] Aggiungere modalità brute-force avanzate
+* [ ] Supporto più completo per i file
+* [ ] Migliorare output (più leggibile)
+
+## Futuro
+
+* [ ] Interfaccia a riga di comando (CLI)
+* [ ] Script di installazione automatica
