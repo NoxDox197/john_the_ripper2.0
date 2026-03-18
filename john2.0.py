@@ -225,4 +225,5 @@ show = subprocess.run(
 print(show.stdout)
 
 
+
 pulizia()
