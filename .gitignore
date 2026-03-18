@@ -205,3 +205,24 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+# File Python compilati
+*.pyc
+*.pyo
+__pycache__/
+
+# File di log
+*.log
+
+# File hash creati dallo script
+*.hash
+
+# Cartelle o file temporanei vari
+*.tmp
+*.swp
+
+# Mac/Windows system files
+.DS_Store
+Thumbs.db
+
+# Config locali (se ne hai)
+*.env
