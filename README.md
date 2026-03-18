@@ -17,6 +17,8 @@ L’obiettivo è semplificare:
 * WSL installato
 * John the Ripper (jumbo) configurato in:
   ~/john-jumbo/run
+* Una wordlist scaricata
+  
 
 ## Come usare
 
