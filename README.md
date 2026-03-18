@@ -36,7 +36,16 @@ L’obiettivo è semplificare:
 * Rendere il tool più flessibile
 * Aggiungere nuove modalità di attacco
 
-## Autore
+⚠️ **Avviso legale e utilizzo responsabile**
 
-Progetto creato a scopo di apprendimento
+Questo progetto è stato sviluppato esclusivamente per scopi educativi e di analisi della sicurezza informatica.
+
+È consentito utilizzarlo solo su sistemi, file o dati di cui si è proprietari o per i quali si dispone di un’autorizzazione esplicita. Qualsiasi utilizzo non autorizzato per accedere a dati, account o sistemi di terzi può costituire una violazione delle leggi vigenti.
+
+Il progetto utilizza strumenti come *John the Ripper*, progettati per il testing della sicurezza delle password, e non per attività dannose o illegali.
+
+L’autore non si assume alcuna responsabilità per eventuali utilizzi impropri del software.
+
+Utilizzando questo codice, si accetta di rispettare tutte le leggi applicabili e di farne un uso etico e responsabile.
+
 
