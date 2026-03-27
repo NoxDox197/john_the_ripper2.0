@@ -1,237 +1,145 @@
-# jhon 2.0
+#john2.1.py
 import os
 import subprocess
-import shlex
+
+def win_to_wsl(path):
+    path = os.path.abspath(path) # Converti in percorso assoluto
+    path = path.replace("\\", "/") # Sostituisci backslash con slash
+    if ":" in path:
+        drive = path[0].lower() # Prendi la lettera dell'unità e converti in minuscolo
+        path = f"/mnt/{drive}{path[2:]}" # Sostituisci "C:" con "/mnt/c", 2: è per rimuovere "C:"
+    return path
 
 
-# chiedo di inserire il file
-def wordlist():
+def ask_wordlist():
     while True:
-        file = input(
-            "Inserire il nome del file di wordlist da usare: (é preferibile rinominare il file con un nome semplice senza spazi o caratteri speciali) "
-        )
+        file = input("Inserire la wordlist: ")
         if os.path.exists(file):
-            return file
+            wsl_path = win_to_wsl(file)
+            nome = os.path.basename(file) # Ottieni solo il nome del file senza il percorso
+
+            subprocess.run([
+                "wsl", "bash", "-c",
+                f"cd ~/john-jumbo/run && cp '{wsl_path}' '{nome}'"
+            ], check=True) #check=True per sollevare un'eccezione se il comando fallisce
+
+            return nome
         else:
-            print("il file non esiste")
+            print("File non esiste")
+
+
 def richiesta():
-
     while True:
-        file = input(
-            "Inserire il nome del file di cui trovare la password: (é preferibile rinominare il file con un nome semplice senza spazi o caratteri speciali) "
-        )
+        file = input("Inserire il file da crackare: ")
         if os.path.exists(file):
-            return file
-        else:
-            print("il file non esiste")
-       
-def controllo(proc):
-    if proc.returncode == 0:
-        print("Processo eseguito")
-    else:
-        print("Errore")
-        print(proc.stderr)
+            wsl_path = win_to_wsl(file)
+            nome = os.path.basename(file)
 
-wordlist = wordlist()
-wordlist_safe = shlex.quote(wordlist)
-file = richiesta()
-file_safe = shlex.quote(file)
-hashfile = file + ".hash"
-hash_safe = shlex.quote(hashfile)
-percorso = os.path.abspath(file)
-percorso_wsl = percorso.replace("C:\\", "/mnt/c/").replace("\\", "/")
-path_safe = shlex.quote(percorso_wsl)
+            subprocess.run([
+                "wsl", "bash", "-c",
+                f"cd ~/john-jumbo/run && cp '{wsl_path}' '{nome}'"
+            ], check=True)
+
+            return nome
+        else:
+            print("File non esiste")
 
 
 def Personalizzazione():
-
     C = input("Conosci qualcosa della password? (S/N)")
+
     if C.lower() == "s":
-        n = input(
-            "La password ha solo numeri o lettere o caratteri stampabili ASCII? (N/L/A)"
-        )
-        # numeri
+        while True:
+            n = input("Numeri, Lettere o ASCII? (N/L/A): ")
+            if n.lower() in ("n", "l", "a"):
+                break
+
         if n.lower() == "n":
-            qn = input(
-                "Conosci la lunghezza della password? (S/N)"
-            )  # qn = quantita numeri
-            if qn.lower() == "s":
-                lunghezza = input("Inserire la lunghezza della password: ")
-                print(f"La password ha {lunghezza} caratteri")
-                opzioni = "--mask=" + ("?" + "d") * int(lunghezza)
-                print(f"la maschera da usare è: {opzioni}")
+            q = input("Conosci lunghezza? (S/N): ")
+            if q.lower() == "s":
+                l = int(input("Lunghezza: "))
+                return "--mask=" + "?d" * l
             else:
-                print("La password ha solo numeri ma non conosci la lunghezza")
-                opzioni = "--incremental=Digits "
+                return "--incremental=Digits"
 
-        # lettere
         elif n.lower() == "l":
-            ql = input(
-                "Conosci la lunghezza della password? (S/N)"
-            )  # ql = quantita lettere
-            if ql.lower() == "s":
-                lunghezza = input("Inserire la lunghezza della password: ")
-                print(f"La password ha {lunghezza} caratteri")
-                opzioni = "--mask=" + (("?" + "1") * int(lunghezza)) + " --1=[a-zA-Z]"
-                print(f"la maschera da usare è: {opzioni}")
+            q = input("Conosci lunghezza? (S/N): ")
+            if q.lower() == "s":
+                l = int(input("Lunghezza: "))
+                return "--mask=" + "?1" * l + " --1=[a-zA-Z]"
             else:
-                print("La password ha solo lettere ma non conosci la lunghezza")
-                opzioni = "--incremental=Alpha "
+                return "--incremental=Alpha"
 
-        # ASCII
         elif n.lower() == "a":
-            ql = input(
-                "Conosci la lunghezza della password? (S/N)"
-            )  # ql = quantita lettere
-            if ql.lower() == "s":
-                lunghezza = input("Inserire la lunghezza della password: ")
-                print(f"La password ha {lunghezza} caratteri")
-                opzioni = "--mask=" + ("?" + "a") * int(lunghezza)
-                print(f"la maschera da usare è: {opzioni}")
+            q = input("Conosci lunghezza? (S/N): ")
+            if q.lower() == "s":
+                l = int(input("Lunghezza: "))
+                return "--mask=" + "?a" * l
             else:
-                print(
-                    "La password ha solo caratteri stampabili ASCII ma non conosci la lunghezza"
-                )
-                opzioni = "--incremental=ASCII "
-    else:
-        opzioni = "--incremental "
-    return opzioni
+                return "--incremental=ASCII"
+
+    return "--incremental"
 
 
-opzioni = Personalizzazione()
+def scegli_tipo():
+    tipi = {
+        "1": "7z2john.pl",
+        "2": "zip2john",
+        "3": "rar2john",
+        "4": "pdf2john.pl",
+        "5": "office2john.py",
+        "6": "gpg2john",
+        "7": "truecrypt2john.py"
+    }
 
-
-# determino il comando da eseguire e lo eseguo
-def esecuzione():
-
-    # tipo di file
-    print(
-        "Inserire il tipo di file tra quelli supportati: " + "\n"
-        "1 -> 7z" + "\n"
-        "2 -> ZIP" + "\n"
-        "3 -> RAR" + "\n"
-        "4 -> PDF" + "\n"
-        "5 -> Office( DOC/DOCX, XLS/XLSX, PPT/PPTX)" + "\n"
-        "6 -> GPG / OpenPGP" + "\n"
-        "7 -> TRUECRYPT / VERACRYPT" + "\n"
-    )
     while True:
+        print("1 7z | 2 ZIP | 3 RAR | 4 PDF | 5 Office | 6 GPG | 7 TRUECRYPT")
+        t = input("Tipo: ")
+        if t in tipi:
+            return tipi[t]
 
-        T = input("Che tipo di file è? ")
 
-        if T == "1":
-            TIPO = "7z2john"
-            break
-        elif T == "2":
-            TIPO = "zip2john"
-            break
-        elif T == "3":
-            TIPO = "rar2john"
-            break
-        elif T == "4":
-            TIPO = "pdf2john"
-            break
-        elif T == "5":
-            TIPO = "office2john"
-            break
-        elif T == "6":
-            TIPO = "gpg2john"
-            break
-        elif T == "7":
-            TIPO = "truecrypt2john"
-            break
-        else:
-            print("Tipo di file non supportato, prova con uno nella lista")
+def esecuzione(file, wordlist, opzioni):
+    TIPO = scegli_tipo()
+    hashfile = file + ".hash"
 
-    # i comandi
+    base = "cd ~/john-jumbo/run && "
 
-    cmd_cp = ["wsl", "bash", "-c", f"cd ~/john-jumbo/run && cp {path_safe} ."]
-
-    cmd_hash = [
-        "wsl",
-        "bash",
-        "-c",
-        f"cd ~/john-jumbo/run && ./{TIPO} {file_safe} > {hash_safe}",
-    ]
-    cmd_john = [
-        "wsl",
-        "bash",
-        "-c",
-        f"cd ~/john-jumbo/run && ./john --wordlist={wordlist_safe} --rules {hash_safe}",
-    ]
-
-    # cmd_cp: copio il file da craccare nella cartella di john
-
-    # lo eseguo con i vai accorgmenti per avere output chiaro e usare la shell
-    process = subprocess.run(cmd_cp, capture_output=True, text=True)
-    controllo(process)
-    if process.returncode != 0:
-        return
-
-    # cmd_hash: genero l'hash del file da craccare
-
-    process = subprocess.run(
-        cmd_hash,
-        capture_output=True,
-        text=True,
-    )
-    controllo(process)
-    if process.returncode != 0:
-        return
-
-    # COMANDO3: eseguo john sul file hash
-    try:
-        process = subprocess.run(cmd_john, capture_output=True, text=True, timeout=900)
-        controllo(process)
-        if process.returncode != 0:
-            return
-    except subprocess.TimeoutExpired:
-        print("Il processo ha impiegato troppo tempo e è stato terminato.")
-
-        cmd_brute = [
-            "wsl",
-            "bash",
-            "-c",
-            f"cd ~/john-jumbo/run && ./john {opzioni} {hash_safe}",
-        ]
-        # copia file
-        process = subprocess.run(
-            cmd_brute,
-            capture_output=True,
-            text=True,
-        )
-
-    # controllo se tutto è andato bene e stampo l'output
-    if process.returncode == 0:
-        print("Processo eseguito")
-
+    # genera hash
+    if TIPO.endswith(".pl"):
+        cmd_hash = f"{base} perl {TIPO} {file} > {hashfile}"
+    elif TIPO.endswith(".py"):
+        cmd_hash = f"{base} python3 {TIPO} {file} > {hashfile}"
     else:
-        print("Errore nell'avvio del processo")
-        print(process.stderr)
+        cmd_hash = f"{base} ./{TIPO} {file} > {hashfile}"
+    subprocess.run(["wsl", "bash", "-c", cmd_hash], check=True)
+    
+   
+
+    # prova wordlist
+    try:
+        cmd_john = f"{base} ./john --wordlist={wordlist} --rules {hashfile} > /dev/null 2>&1" # reindirizza output e errori a /dev/null, ossia li ignora
+        subprocess.run(["wsl", "bash", "-c", cmd_john], timeout=900, check=True)
+    except subprocess.TimeoutExpired:
+     #wordlist fallsca, passo a brute force
+        print("Timeout → brute force")
+        cmd_brute = f"{base} ./john {opzioni} {hashfile}"
+        subprocess.run(["wsl", "bash", "-c", cmd_brute], check=True)
+
+    # mostra risultato
+    show_cmd = f"{base} ./john --show {hashfile}"
+    result = subprocess.run(["wsl", "bash", "-c", show_cmd],
+                            capture_output=True, text=True)
+
+    print(result.stdout)
+
+    # pulizia
+    cleanup = f"{base} rm -f {file} {hashfile}"
+    subprocess.run(["wsl", "bash", "-c", cleanup])
 
 
-esecuzione()
-
-
-def pulizia():
-    # elimino i file creati
-
-    cmd_rm_hash = ["wsl", "bash", "-c", f"cd ~/john-jumbo/run && rm -f {hash_safe}"]
-
-    cmd_rm_file = ["wsl", "bash", "-c", f"cd ~/john-jumbo/run && rm -f {file_safe}"]
-
-    subprocess.run(cmd_rm_hash)
-    subprocess.run(cmd_rm_file)
-
-
-show_cmd = ["wsl", "bash", "-c", f"cd ~/john-jumbo/run && ./john --show {hash_safe}"]
-show = subprocess.run(
-    show_cmd,
-    capture_output=True,
-    text=True,
-)
-
-print(show.stdout)
-
-
-pulizia()
+# MAIN
+wordlist = ask_wordlist()
+file = richiesta()
+opzioni = Personalizzazione()
+esecuzione(file, wordlist, opzioni)
